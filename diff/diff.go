@@ -32,7 +32,7 @@ func Run(fileList []string) {
 	cmd := exec.Command(util.AbsOrRelExecutePath(config.GlobalConfig.CompareTools), diffArg...)
 	output, err := cmd.CombinedOutput()
 	exitCode := cmd.ProcessState.ExitCode()
-	if nil != err && exitCode != 13 {
+	if nil != err && !define.IsCompareExitCodeSafe(config.GlobalConfig.CompareTools, exitCode) {
 		slog.Panicf("[diff]execute compare tool output:%s\nerror:%v", output, err)
 		return
 	}

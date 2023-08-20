@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 var executeDir string
@@ -181,4 +182,10 @@ func CopyDir(srcDir, dstDir string) error {
 		// It's a file, so copy it.
 		return CopyFile(srcPath, dstPath)
 	})
+}
+
+// GetFileNameWithoutExt 获取文件名，不带后缀
+func GetFileNameWithoutExt(pathName string) string {
+	fileName := filepath.Base(pathName)
+	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }

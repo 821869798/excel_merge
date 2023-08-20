@@ -27,4 +27,6 @@ func TestFunc1(t *testing.T) {
 
 	result := util.FormatFieldName("File {file} had error {error}", "file", file, "error", err)
 	t.Logf(strings.Join(result, "|"))
+
+	t.Logf(util.GetFileNameWithoutExt("qwe.txt"))
 }
