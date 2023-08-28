@@ -27,28 +27,28 @@ func Run(fileList []string) {
 
 	if !define.IsExcelFile(outputFilePath) {
 		// 非Excel文件，直接调用对比工具
-		slog.Infof("The merge file is not an Excel file, start comparison tools directly.")
+		slog.Infof("[merge]The merge file is not an Excel file, start comparison tools directly.")
 		diffArg := util.FormatFieldName(config.GlobalConfig.MergeArgs, "base", originBaseFile, "remote", originRemoteFile, "local", originLocalFile, "output", outputFilePath)
 		cmd := exec.Command(util.AbsOrRelExecutePath(config.GlobalConfig.CompareTools), diffArg...)
 		output, err := cmd.CombinedOutput()
 		if nil != err {
-			slog.Panicf("[diff]execute compare tool output:%s\nerror:%v", output, err)
+			slog.Panicf("[merge]execute compare tool output:%s\nerror:%v", output, err)
 		}
 		return
 	}
 
 	err := util.CreateDirIfNoExist(util.RelExecuteDir(define.WorkMergeTempDir))
 	if err != nil {
-		slog.Panicf("Back local file error: %v", err)
+		slog.Panicf("[merge]Back local file error: %v", err)
 	}
 
 	if util.ExistFile(outputFilePath) {
 		backupFile := util.RelExecuteDir(define.WorkMergeTempDir, filepath.Base(outputFilePath))
 		err = util.CopyFile(outputFilePath, backupFile)
 		if err != nil {
-			slog.Panicf("Back local file copy error: %v", err)
+			slog.Panicf("[merge]Back local file copy error: %v", err)
 		}
-		slog.Infof("Backup local excel file to %s", backupFile)
+		slog.Infof("[merge]Backup local excel file to %s", backupFile)
 	}
 
 	// 转换csv
@@ -64,11 +64,18 @@ func Run(fileList []string) {
 	tmpOutputFileName := strings.TrimSuffix(fileName, filepath.Ext(fileName)) + "." + config.GlobalConfig.MergeOutputType
 	tmpOutputFile := util.RelExecuteDir(define.WorkMergeTempDir, tmpOutputFileName)
 
+	if util.ExistFile(tmpOutputFile) {
+		err = os.Remove(tmpOutputFile)
+		if err != nil {
+			slog.Panicf("[merge] remove tmp output file error: %v", err)
+		}
+	}
+
 	diffArg := util.FormatFieldName(config.GlobalConfig.MergeArgs, "base", baseFile, "remote", remoteFile, "local", localFile, "output", tmpOutputFile)
 	cmd := exec.Command(util.AbsOrRelExecutePath(config.GlobalConfig.CompareTools), diffArg...)
 	output, err := cmd.CombinedOutput()
 	if nil != err {
-		slog.Panicf("[diff]execute compare tool output:%s\nerror:%v", output, err)
+		slog.Panicf("[merge]execute compare tool output:%s\nerror:%v", output, err)
 	}
 	slog.Infof(string(output))
 
@@ -83,17 +90,17 @@ func Run(fileList []string) {
 
 	err = mergeToExcel(tmpOutputFile, mergeExcelFiles, outputFilePath)
 	if err != nil {
-		slog.Panicf("merge excel mode[%v] error: %v", config.GlobalConfig.MergeOutputType, err)
+		slog.Panicf("[merge] excel mode[%v] error: %v", config.GlobalConfig.MergeOutputType, err)
 		return
 	}
-	slog.Infof("Merge excel file complete:%s", outputFilePath)
+	slog.Infof("[merge] excel file complete:%s", outputFilePath)
 	util.AnyKeyToQuit()
 }
 
 func convertFile(file string) string {
 	excelData, err := source.ReadExcel(file, true)
 	if err != nil {
-		slog.Panicf("Read excel error: %v", err)
+		slog.Panicf("[merge] Read excel error: %v", err)
 		return ""
 	}
 
@@ -111,7 +118,7 @@ func convertFile(file string) string {
 
 	err = convert.RunConvert(config.GlobalConfig.MergeOutputType, excelData, outputFile)
 	if err != nil {
-		slog.Panicf("Convert excel mode[%v] error: %v", config.GlobalConfig.MergeOutputType, err)
+		slog.Panicf("[merge] Convert excel mode[%v] error: %v", config.GlobalConfig.MergeOutputType, err)
 		return ""
 	}
 
@@ -153,9 +160,6 @@ func mergeToExcel(csvFilePath string, mergeExcelFiles []string, outputExcelFileP
 	}
 
 	var excelFiles []*excelize.File
-	// sheet name 对应哪个excel文件的索引，使用最优先的情况
-	sheetMapping := make(map[string]int)
-
 	for _, excelFile := range mergeExcelFiles {
 		excel, err := excelize.OpenFile(excelFile)
 		if err != nil {
@@ -164,56 +168,67 @@ func mergeToExcel(csvFilePath string, mergeExcelFiles []string, outputExcelFileP
 		excelFiles = append(excelFiles, excel)
 	}
 
+	// sheet name 对应哪个excel文件的索引，使用最优先的情况
+	sheetMapping := make(map[string]int)
+
 	// 从后往前遍历，优先使用前面的excel文件的sheet
 	for i := len(excelFiles) - 1; i >= 0; i-- {
 		excel := excelFiles[i]
 		for _, sheetName := range excel.GetSheetMap() {
-			if _, ok := sheetMapping[sheetName]; !ok {
-				sheetMapping[sheetName] = i
+			sheetMapping[sheetName] = i
+		}
+	}
+
+	// 基础excel文件的sheet
+	const baseExcelFileIndex = 0
+	baseExcelFile := excelFiles[baseExcelFileIndex]
+
+	// 删除base excel 多余的Sheet
+	for _, sheetName := range baseExcelFile.GetSheetMap() {
+		if _, ok := excelData.SheetMapping[sheetName]; !ok {
+			err = baseExcelFile.DeleteSheet(sheetName)
+			if err != nil {
+				return err
 			}
 		}
 	}
 
-	const baseExcelFileIndex = 0
+	// 对应基础的excel文件中的sheet索引顺序，可能有修改顺序
+	baseExcelSheetsIndex := ExcelGetSheetIndexMap(baseExcelFile)
 
-	// 基础excel文件的sheet
-	baseExcelFile := excelFiles[baseExcelFileIndex]
-
-	for _, sheet := range excelData.Sheets {
+	for sheetIndex, sheet := range excelData.Sheets {
 		excelIndex, ok := sheetMapping[sheet.SheetName]
 		if !ok {
 			return errors.New(fmt.Sprintf("Not found sheet name: %s", sheet.SheetName))
 		}
-		currentExcelSheet := excelFiles[excelIndex]
 		if excelIndex != baseExcelFileIndex {
-			// 拷贝当前sheet到baseExcelFile中
-			newSheetIndex, err := baseExcelFile.NewSheet(sheet.SheetName)
+			// 在当前位置拆入一张新sheet，但是没有样式  // TODO 等待excelize支持从别的excel文件中复制sheet
+			err := ExcelInsertSheet(baseExcelFile, sheetIndex, sheet.SheetName)
 			if err != nil {
 				return err
 			}
-			_ = newSheetIndex
-			// TODO 等待excelize支持从别的excel文件中复制sheet，以及支持调整sheet顺序，目前只能新增sheet到默认
+
+			// 重新获取Sheet顺序
+			baseExcelSheetsIndex = ExcelGetSheetIndexMap(baseExcelFile)
+
+		} else {
+			// 验证Sheet顺序和csv文本中的是否一致,如果不一致则调整
+			sourceSheetIndex := baseExcelSheetsIndex[sheet.SheetName]
+			if sourceSheetIndex != sheetIndex {
+				adjustSheetName := baseExcelFile.GetSheetName(sheetIndex)
+				err = ExcelSwapSheetByName(baseExcelFile, sheet.SheetName, adjustSheetName)
+				if err != nil {
+					return err
+				}
+
+				// 重新获取Sheet顺序
+				baseExcelSheetsIndex = ExcelGetSheetIndexMap(baseExcelFile)
+			}
 		}
 
-		excelRows, err := currentExcelSheet.GetRows(sheet.SheetName)
+		excelRows, err := baseExcelFile.GetRows(sheet.SheetName)
 		if err != nil {
 			return err
-		}
-		// 清除多余的行数据
-		if len(sheet.RawData) <= 0 {
-			if len(excelRows) > 0 {
-				// clear sheet
-				for rowIndex, cols := range excelRows {
-					for colIndex, _ := range cols {
-						axisStr, _ := excelize.CoordinatesToCellName(colIndex, rowIndex+1)
-						err = baseExcelFile.SetCellValue(sheet.SheetName, axisStr, "")
-						if err != nil {
-							return err
-						}
-					}
-				}
-			}
-			continue
 		}
 
 		// csv数据设置到excel中
@@ -224,11 +239,13 @@ func mergeToExcel(csvFilePath string, mergeExcelFiles []string, outputExcelFileP
 				return err
 			}
 			// 清除多余的列数据
-			for colIndex := len(rowRecord); colIndex < len(excelRows[rowIndex]); colIndex++ {
-				axisStr, _ := excelize.CoordinatesToCellName(colIndex+1, rowIndex+1)
-				err = baseExcelFile.SetCellValue(sheet.SheetName, axisStr, "")
-				if err != nil {
-					return err
+			if rowIndex < len(excelRows) {
+				for colIndex := len(rowRecord); colIndex < len(excelRows[rowIndex]); colIndex++ {
+					axisStr, _ := excelize.CoordinatesToCellName(colIndex+1, rowIndex+1)
+					err = baseExcelFile.SetCellValue(sheet.SheetName, axisStr, "")
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -237,7 +254,7 @@ func mergeToExcel(csvFilePath string, mergeExcelFiles []string, outputExcelFileP
 		for rowIndex := len(sheet.RawData); rowIndex < len(excelRows); rowIndex++ {
 			for colIndex, _ := range excelRows[rowIndex] {
 				axisStr, _ := excelize.CoordinatesToCellName(colIndex+1, rowIndex+1)
-				err = currentExcelSheet.SetCellValue(sheet.SheetName, axisStr, "")
+				err = baseExcelFile.SetCellValue(sheet.SheetName, axisStr, "")
 				if err != nil {
 					return err
 				}
@@ -246,7 +263,6 @@ func mergeToExcel(csvFilePath string, mergeExcelFiles []string, outputExcelFileP
 
 		if err != nil {
 			return err
-
 		}
 	}
 

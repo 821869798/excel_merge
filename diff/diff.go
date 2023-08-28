@@ -42,7 +42,7 @@ func Run(fileList []string) {
 func convertFile(file string) string {
 	fileInfo, err := os.Stat(file) // replace with your file
 	if err != nil {
-		slog.Panicf("Read Excel error: %v", err)
+		slog.Panicf("[diff]Read Excel error: %v", err)
 		return ""
 	}
 	fileName := filepath.Base(file)
@@ -58,19 +58,19 @@ func convertFile(file string) string {
 
 	excelData, err := source.ReadExcel(file, false)
 	if err != nil {
-		slog.Panicf("Read Excel error: %v", err)
+		slog.Panicf("[diff]Read Excel error: %v", err)
 		return ""
 	}
 
 	err = util.CreateDirIfNoExist(filepath.Dir(outputFile))
 	if err != nil {
-		slog.Panicf("%v", err)
+		slog.Panicf("[diff] %v", err)
 		return ""
 	}
 
 	err = convert.RunConvert(config.GlobalConfig.DiffOutputType, excelData, outputFile)
 	if err != nil {
-		slog.Panicf("Convert Excel to mode[%v] error: %v", config.GlobalConfig.DiffOutputType, err)
+		slog.Panicf("[diff] Convert Excel to mode[%v] error: %v", config.GlobalConfig.DiffOutputType, err)
 		return ""
 	}
 

@@ -38,6 +38,7 @@ func main() {
 
 	defer func() {
 		if err := recover(); err != nil {
+			slog.Errorf("[main] catch exception: %v", err)
 			util.AnyKeyToQuit()
 			os.Exit(1)
 		}
