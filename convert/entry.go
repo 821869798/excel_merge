@@ -2,8 +2,8 @@ package convert
 
 import (
 	"errors"
-	"excel_merge/define"
 	"fmt"
+	"github.com/821869798/excel_merge/define"
 )
 
 func RunConvert(mode string, excelData *define.ExcelData, filePath string) error {

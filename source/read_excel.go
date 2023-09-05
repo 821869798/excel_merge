@@ -1,7 +1,7 @@
 package source
 
 import (
-	"excel_merge/define"
+	"github.com/821869798/excel_merge/define"
 	"github.com/xuri/excelize/v2"
 )
 

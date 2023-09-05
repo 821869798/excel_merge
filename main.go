@@ -1,12 +1,14 @@
 package main
 
 import (
-	"excel_merge/config"
-	"excel_merge/diff"
-	"excel_merge/merge"
-	"excel_merge/util"
 	"flag"
 	"fmt"
+	"github.com/821869798/excel_merge/config"
+	"github.com/821869798/excel_merge/diff"
+	"github.com/821869798/excel_merge/merge"
+	"github.com/821869798/excel_merge/register_tools"
+	"github.com/821869798/fankit/console"
+	"github.com/821869798/fankit/fanpath"
 	"github.com/gookit/slog"
 	"os"
 )
@@ -39,12 +41,19 @@ func main() {
 	defer func() {
 		if err := recover(); err != nil {
 			slog.Errorf("[main] catch exception: %v", err)
-			util.AnyKeyToQuit()
+			console.AnyKeyToQuit()
 			os.Exit(1)
 		}
 	}()
 
-	err := config.ParseConfig(*conf)
+	// 初始化执行目录
+	err := fanpath.InitExecutePath()
+	if err != nil {
+		slog.Panicf("init execute path error:%v", err)
+	}
+
+	// 加载配置文件
+	err = config.ParseConfig(*conf)
 	if err != nil {
 		slog.Panicf("Load config toml file failed: %v", err)
 	} else {
@@ -70,6 +79,8 @@ func main() {
 		diff.Run(fileList)
 	} else if len(fileList) == 4 {
 		merge.Run(fileList)
+	} else if len(fileList) == 0 {
+		register_tools.Run()
 	} else {
 		usage()
 	}

@@ -1,12 +1,13 @@
 package diff
 
 import (
-	"excel_merge/config"
-	"excel_merge/convert"
-	"excel_merge/define"
-	"excel_merge/source"
-	"excel_merge/util"
 	"fmt"
+	"github.com/821869798/excel_merge/config"
+	"github.com/821869798/excel_merge/convert"
+	"github.com/821869798/excel_merge/define"
+	"github.com/821869798/excel_merge/source"
+	"github.com/821869798/fankit/fanpath"
+	"github.com/821869798/fankit/fanstr"
 	"github.com/gookit/slog"
 	"os"
 	"os/exec"
@@ -28,8 +29,8 @@ func Run(fileList []string) {
 		defer os.Remove(file2)
 	}
 
-	diffArg := util.FormatFieldName(config.GlobalConfig.DiffArgs, "left", file1, "right", file2)
-	cmd := exec.Command(util.AbsOrRelExecutePath(config.GlobalConfig.CompareTools), diffArg...)
+	diffArg := fanstr.FormatFieldName(config.GlobalConfig.DiffArgs, "left", file1, "right", file2)
+	cmd := exec.Command(fanpath.AbsOrRelExecutePath(config.GlobalConfig.CompareTools), diffArg...)
 	output, err := cmd.CombinedOutput()
 	exitCode := cmd.ProcessState.ExitCode()
 	if nil != err && !define.IsCompareExitCodeSafe(config.GlobalConfig.CompareTools, exitCode) {
@@ -62,7 +63,7 @@ func convertFile(file string) string {
 		return ""
 	}
 
-	err = util.CreateDirIfNoExist(filepath.Dir(outputFile))
+	err = fanpath.CreateDirIfNoExist(filepath.Dir(outputFile))
 	if err != nil {
 		slog.Panicf("[diff] %v", err)
 		return ""

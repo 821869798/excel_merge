@@ -1,7 +1,7 @@
 package convert
 
 import (
-	"excel_merge/define"
+	"github.com/821869798/excel_merge/define"
 )
 
 var convertModes map[string]define.IConvert

@@ -1,7 +1,8 @@
 package diff
 
 import (
-	"excel_merge/util"
+	"github.com/821869798/fankit/fanpath"
+	"github.com/821869798/fankit/fanstr"
 	"os"
 	"strings"
 	"testing"
@@ -25,8 +26,8 @@ func TestFunc1(t *testing.T) {
 	file := "my file.txt"
 	err := "file not found"
 
-	result := util.FormatFieldName("File {file} had error {error}", "file", file, "error", err)
+	result := fanstr.FormatFieldName("File {file} had error {error}", "file", file, "error", err)
 	t.Logf(strings.Join(result, "|"))
 
-	t.Logf(util.GetFileNameWithoutExt("qwe.txt"))
+	t.Logf(fanpath.GetFileNameWithoutExt("qwe.txt"))
 }
