@@ -8,7 +8,7 @@ excel merge diff tools，excel对比合并工具，把excel转成csv格式，然
 - 支持excel合并 merge
 - 支持作为TortoiseSVN和TortoiseGit以及其他能够自定义对比工具的版本控制软件，如果对比的不是excel文件，会直接调用对比工具。
 
-## 使用方法
+## 设置方法
 
 ### windows
 
@@ -24,11 +24,14 @@ excel merge diff tools，excel对比合并工具，把excel转成csv格式，然
 
 3. 注册完成，任意键关闭
 
-   ![complete_register](E:\program\my\go\excel_merge\doc\img\complete_register.png)
+   ![complete_register](doc/img/complete_register.png)
 
-   4. 就可以正常使用了，比较示例如下，合并同理：
+## 使用方法
+- 设置好之后就可以正常使用了，默认使用csv方式，也支持txt，可以在exe同级的config.toml文件中修改，比较示例如下：
 
-      ![diff](E:\program\my\go\excel_merge\doc\img\diff.png)
+![diff](doc/img/diff.png)
+
+- 合并基本同理，默认使用txt模式，就是正常的文本合并，合并完选择基础的excel文件，然后写回excel文件中
 
 ## TODO
 
