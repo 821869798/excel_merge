@@ -52,15 +52,25 @@ func main() {
 		slog.Panicf("init execute path error:%v", err)
 	}
 
-	// 加载配置文件
-	err = config.ParseConfig(*conf)
-	if err != nil {
-		slog.Panicf("Load config toml file failed: %v", err)
-	} else {
-		slog.Infof("Load config toml success")
+	fileList := flag.Args()
+	if len(fileList) == 0 {
+		err = config.ParseConfig(*conf)
+		if err != nil {
+			// 写入一份新的
+			err = config.WriteNewConfig(*conf)
+			if err != nil {
+				slog.Panicf("Write new config toml file failed: %v", err)
+			}
+			parseConfig()
+		}
+
+		register_tools.Run()
+		return
 	}
 
-	fileList := flag.Args()
+	// 加载配置文件
+	parseConfig()
+
 	modeString := *mode
 
 	if modeString != "" {
@@ -79,9 +89,16 @@ func main() {
 		diff.Run(fileList)
 	} else if len(fileList) == 4 {
 		merge.Run(fileList)
-	} else if len(fileList) == 0 {
-		register_tools.Run()
 	} else {
 		usage()
+	}
+}
+
+func parseConfig() {
+	err := config.ParseConfig(*conf)
+	if err != nil {
+		slog.Panicf("Load config toml file failed: %v", err)
+	} else {
+		slog.Infof("Load config toml success")
 	}
 }

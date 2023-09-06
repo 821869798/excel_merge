@@ -3,7 +3,7 @@ module github.com/821869798/excel_merge
 go 1.20
 
 require (
-	github.com/821869798/fankit v0.0.2
+	github.com/821869798/fankit v0.0.3
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/BurntSushi/toml v1.3.2
 	github.com/gookit/slog v0.5.4

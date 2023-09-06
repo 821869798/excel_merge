@@ -4,10 +4,10 @@ package reg
 
 import "errors"
 
-func ReadRegistry(k registry.Key, path, key string) (string, error) {
+func ReadRegistry(wk WindowsRegistryKey, path, key string) (string, error) {
 	return "", errors.New("not support in current system")
 }
 
-func WriteRegistry(k registry.Key, path, key, value string) error {
+func WriteRegistry(wk WindowsRegistryKey, path, key, value string) error {
 	return errors.New("not support in current system")
 }

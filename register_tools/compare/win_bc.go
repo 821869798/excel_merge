@@ -3,7 +3,6 @@ package compare
 import (
 	"github.com/821869798/excel_merge/define"
 	"github.com/821869798/excel_merge/register_tools/reg"
-	"golang.org/x/sys/windows/registry"
 	"strings"
 )
 
@@ -19,7 +18,7 @@ func (w *winBeyondCompare) SupportSystem() define.SystemType {
 }
 
 func (w *winBeyondCompare) GetExecuteFilePath() (string, bool) {
-	value, err := reg.ReadRegistry(registry.LOCAL_MACHINE, `SOFTWARE\Classes\BeyondCompare.SettingsPackage\shell\open\command`, "")
+	value, err := reg.ReadRegistry(reg.LOCAL_MACHINE, `SOFTWARE\Classes\BeyondCompare.SettingsPackage\shell\open\command`, "")
 	if err == nil {
 		path, ok := parseBCPath(value)
 		if ok {

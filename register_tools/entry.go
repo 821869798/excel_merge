@@ -46,14 +46,14 @@ func Run() {
 	}
 	// 判断当前支持注册的工具
 	supportRegisters := make([]scm.IRegisterSCM, 0)
-	for _, scm := range registerSCMs {
-		if scm.SupportSystem() == currentSystem {
-			supportRegisters = append(supportRegisters, scm)
+	for _, scmTools := range registerSCMs {
+		if scmTools.SupportSystem() == currentSystem {
+			supportRegisters = append(supportRegisters, scmTools)
 		}
 	}
 
 	if len(supportRegisters) <= 0 {
-		slog.Panicf("[register] The current system does not support registration tools(当前系统不支持注册工具)")
+		slog.Panicf("[register] The current system does not support registration tools. Please manually configure config.toml and manually configure version tools\n(当前系统不支持注册工具，请手动配置config.toml,以及手动配置版本工具)")
 	}
 
 	// 通过对话框选择对比工具
@@ -74,8 +74,8 @@ func Run() {
 	// 选择需要执行的注册工具
 	var options = make([]string, len(supportRegisters))
 	var checked = make(map[int]bool, len(supportRegisters))
-	for index, scm := range supportRegisters {
-		options[index] = scm.Name()
+	for index, scmTools := range supportRegisters {
+		options[index] = scmTools.Name()
 		checked[index] = true
 	}
 
@@ -102,12 +102,12 @@ func Run() {
 
 	// 开始注册
 	for _, ans := range answers {
-		scm := supportRegisters[ans.Index]
-		ok := scm.Register(fanpath.ExecuteFilePath())
+		scmTools := supportRegisters[ans.Index]
+		ok := scmTools.Register(fanpath.ExecuteFilePath())
 		if ok {
-			slog.Infof("[register] register_tools success(注册SCM工具成功): %s", scm.Name())
+			slog.Infof("[register] register_tools success(注册SCM工具成功): %s", scmTools.Name())
 		} else {
-			slog.Infof("[register] Failed to register SCM tool, possibly not installed or open\n(注册SCM工具失败,可能是没有安装,或者是打开状态): %s", scm.Name())
+			slog.Infof("[register] Failed to register SCM tool, possibly not installed or open\n(注册SCM工具失败,可能是没有安装,或者是打开状态): %s", scmTools.Name())
 		}
 	}
 

@@ -3,7 +3,7 @@ package define
 type SystemType int
 
 const (
-	SystemTypeNone = iota
+	SystemTypeNone SystemType = iota
 	SystemTypeWindows
 	SystemTypeLinux
 	SystemTypeMac

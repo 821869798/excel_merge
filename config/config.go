@@ -32,6 +32,26 @@ func ParseConfig(configFile string) error {
 	return nil
 }
 
+func WriteNewConfig(configFile string) error {
+	const configTemplate = `# 对比的临时输出文件格式
+diff_output = "csv"
+# 合并的临时输出文件格式
+merge_output = "txt"
+# 对比工具的执行文件
+compare_exe = "you compare tool execute path"
+# 对比工具参数{left} {right}
+diff_arg = "{left} {right}"
+# 合并工具参数
+merge_arg = "{remote} {local} {base} {output}"`
+
+	ConfigFilePath = fanpath.AbsOrRelExecutePath(configFile)
+	err := os.WriteFile(ConfigFilePath, []byte(configTemplate), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func WriteConfig(configFile string) error {
 	if configFile == "" {
 		configFile = ConfigFilePath
