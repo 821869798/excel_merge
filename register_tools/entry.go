@@ -53,7 +53,9 @@ func Run() {
 	}
 
 	if len(supportRegisters) <= 0 {
-		slog.Panicf("[register] The current system does not support registration tools. Please manually configure config.toml and manually configure version tools\n(当前系统不支持注册工具，请手动配置config.toml,以及手动配置版本工具)")
+		slog.Warnf("[register] The current system does not support registration tools. Please manually configure config.toml and manually configure version tools\n(当前系统不支持注册工具，请手动配置config.toml,以及手动配置版本工具)")
+		console.AnyKeyToQuit()
+		return
 	}
 
 	// 通过对话框选择对比工具
@@ -96,7 +98,8 @@ func Run() {
 	}
 
 	if len(answers) == 0 {
-		slog.Info("[register] No SCM tool is registered(没有选择注册SCM工具)")
+		slog.Warnf("[register] No SCM tool is registered(没有选择注册SCM工具)")
+		console.AnyKeyToQuit()
 		return
 	}
 
@@ -107,7 +110,7 @@ func Run() {
 		if ok {
 			slog.Infof("[register] register_tools success(注册SCM工具成功): %s", scmTools.Name())
 		} else {
-			slog.Infof("[register] Failed to register SCM tool, possibly not installed or open\n(注册SCM工具失败,可能是没有安装,或者是打开状态): %s", scmTools.Name())
+			slog.Warnf("[register] Failed to register SCM tool, possibly not installed or open\n(注册SCM工具失败,可能是没有安装,或者是打开状态): %s", scmTools.Name())
 		}
 	}
 
