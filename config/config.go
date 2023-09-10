@@ -11,11 +11,12 @@ import (
 )
 
 type RawGlobalConfig struct {
-	DiffOutputType  string `toml:"diff_output"`
-	MergeOutputType string `toml:"merge_output"`
-	CompareTools    string `toml:"compare_exe"`
-	DiffArgs        string `toml:"diff_arg"`
-	MergeArgs       string `toml:"merge_arg"`
+	DiffOutputType   string `toml:"diff_output"`
+	MergeOutputType  string `toml:"merge_output"`
+	CompareTools     string `toml:"compare_exe"`
+	DiffArgs         string `toml:"diff_arg"`
+	MergeArgs        string `toml:"merge_arg"`
+	DiffHistoryCount int    `toml:"diff_history_count"`
 }
 
 var (
@@ -42,7 +43,9 @@ compare_exe = "you compare tool execute path"
 # 对比工具参数{left} {right}
 diff_arg = "{left} {right}"
 # 合并工具参数
-merge_arg = "{remote} {local} {base} {output}"`
+merge_arg = "{remote} {local} {base} {output}"
+# 对比历史记录数量
+diff_history_count = 50`
 
 	ConfigFilePath = fanpath.AbsOrRelExecutePath(configFile)
 	err := os.WriteFile(ConfigFilePath, []byte(configTemplate), 0644)

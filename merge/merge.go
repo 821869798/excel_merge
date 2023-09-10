@@ -8,6 +8,7 @@ import (
 	"github.com/821869798/excel_merge/define"
 	"github.com/821869798/excel_merge/source"
 	"github.com/821869798/fankit/console"
+	"github.com/821869798/fankit/fanopen"
 	"github.com/821869798/fankit/fanpath"
 	"github.com/821869798/fankit/fanstr"
 	"github.com/AlecAivazis/survey/v2"
@@ -260,4 +261,16 @@ func mergeToExcel(csvFilePath string, mergeExcelFiles []string, outputExcelFileP
 
 	err = baseExcelFile.SaveAs(outputExcelFilePath)
 	return err
+}
+
+func ViewHistoryPath() {
+	mergePath := fanpath.RelExecuteDir(define.WorkMergeTempDir)
+	if !fanpath.ExistPath(mergePath) {
+		slog.Panicf("[merge] Not found merge history path: %s", mergePath)
+		return
+	}
+	err := fanopen.Start(mergePath)
+	if err != nil {
+		slog.Panicf("[merge] Open merge history path error: %v", err)
+	}
 }

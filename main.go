@@ -7,8 +7,10 @@ import (
 	"github.com/821869798/excel_merge/diff"
 	"github.com/821869798/excel_merge/merge"
 	"github.com/821869798/excel_merge/register_tools"
+	"github.com/821869798/fankit/admin"
 	"github.com/821869798/fankit/console"
 	"github.com/821869798/fankit/fanpath"
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/gookit/slog"
 	"os"
 )
@@ -62,9 +64,13 @@ func main() {
 				slog.Panicf("Write new config toml file failed: %v", err)
 			}
 			parseConfig()
+			register_tools.Run()
+			return
 		}
 
-		register_tools.Run()
+		// 进入选择模式
+		parseConfig()
+		selectMode()
 		return
 	}
 
@@ -100,5 +106,36 @@ func parseConfig() {
 		slog.Panicf("Load config toml file failed: %v", err)
 	} else {
 		slog.Infof("Load config toml success")
+	}
+}
+
+func selectMode() {
+	var answer survey.OptionAnswer
+	var options = []string{
+		"View Difference Comparison History Catalog(查看差异对比历史目录)",
+		"View Merge History Catalog(查看合并历史目录)",
+		"Register Comparison Tool(注册对比工具)",
+	}
+	defaultIndex := 0
+	if admin.IsAdministrator() {
+		defaultIndex = 2
+	}
+	prompt := &survey.Select{
+		Message: `Please select a mode(请选择一个模式):`,
+		Options: options,
+		Default: defaultIndex,
+	}
+	err := survey.AskOne(prompt, &answer)
+	if err != nil {
+		slog.Panicf("[main] select mode failed error: %v", err)
+		return
+	}
+	switch answer.Index {
+	case 0:
+		diff.ViewHistoryPath()
+	case 1:
+		merge.ViewHistoryPath()
+	case 2:
+		register_tools.Run()
 	}
 }

@@ -8,3 +8,5 @@ compare_exe = "C:\\Program Files\\Beyond Compare 4\\BCompare.exe"
 diff_arg = "{left} {right}"
 # 合并工具参数
 merge_arg = "{remote} {local} {base} {output}"
+# 对比历史记录数量
+diff_history_count = 50

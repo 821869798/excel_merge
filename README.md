@@ -12,7 +12,7 @@ excel merge diff tools，excel对比合并工具，把excel转成csv格式，然
 
 ### windows
 
-双击打开执行文件，允许权限（用于读取和修改注册表）
+双击打开执行文件，允许权限（用于读取和修改注册表，只需要一次）
 
 1. 选择基础的对比工具之后回车确定，如果有安装`Beyond Comapre`或者使用绿色版注册了右键菜单都会识别出来
 
@@ -32,6 +32,10 @@ excel merge diff tools，excel对比合并工具，把excel转成csv格式，然
 ![diff](doc/img/diff.png)
 
 - 合并基本同理，默认使用txt模式，就是正常的文本合并，合并完选择基础的excel文件，然后写回excel文件中
+
+- 可以查看历史记录，通过上述设置好之后，第二次打开会进入选择模式，可以选择查看历史记录目录
+
+  ![select_mode](doc/img/select_mode.png)
 
 ## TODO
 
